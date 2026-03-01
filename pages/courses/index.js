@@ -372,7 +372,7 @@ return(
             <Input
               value={courseName}
               onChange={(e) => setCourseName(e.target.value)}
-              placeholder="Course name (e.g., CMPSC 461)"
+              placeholder="Course name (eg: CMPSC 461)"
             />
             <Button type="submit">Add course</Button>
           </Row>

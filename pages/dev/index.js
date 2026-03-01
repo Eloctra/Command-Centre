@@ -271,7 +271,7 @@ export default function Developers() {
             <Input
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Project name (e.g., Command Centre v2)"
+              placeholder="Project name (eg: Command Centre)"
             />
             <Button type="submit">Add project</Button>
           </Row>
