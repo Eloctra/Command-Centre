@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/library/firebaseConfig";
@@ -43,6 +44,9 @@ export default function Signup() {
         />
         <button type="submit">Create account</button>
       </form>
+      <div>
+        <Link href="/auth/login">Login</Link>
+      </div>
 
       {msg && <p style={{ color: "lightgreen" }}>{msg}</p>}
       {err && <p style={{ color: "salmon" }}>{err}</p>}

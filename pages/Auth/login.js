@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/library/firebaseConfig";
@@ -60,6 +61,9 @@ export default function Login() {
 
       <div style={{ marginTop: 12 }}>
         <button onClick={handleGoogleLogin}>Sign in with Google</button>
+      </div>
+      <div>
+        <Link href="/auth/signup">Sign up</Link>
       </div>
 
       {msg && <p style={{ color: "lightgreen" }}>{msg}</p>}

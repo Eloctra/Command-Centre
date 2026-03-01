@@ -1,3 +1,4 @@
+// Courses page for creating courses and managing assignments in an accordion layout.
 import { useMemo, useEffect,useState }  from "react";
 import Link from "next/link";
 import { addDoc,collection,doc,onSnapshot,orderBy,query,updateDoc} from "firebase/firestore";
@@ -5,17 +6,19 @@ import { onAuthStateChanged } from "firebase/auth";
 import {auth, database} from "@/library/firebaseConfig";
 import styled from "styled-components";
 
-//Styling
 export const Page = styled.div`
   padding: 2.2vw;
   max-width: 72vw;
+  margin: 0 auto;
+  color: var(--cc-text);
 `;
 
 export const Card = styled.div`
-  background: #121a2a;
-  border: 0.12vw solid #ffffff1a;
+  background: var(--cc-surface);
+  border: 0.12vw solid var(--cc-border-subtle);
   border-radius: 1.2vw;
   padding: 1.6vw;
+  box-shadow: 0 2vw 5vw rgba(0, 0, 0, 0.5);
 `;
 
 export const Row = styled.div`
@@ -28,46 +31,50 @@ export const Input = styled.input`
   flex: 1;
   padding: 1vw 1.1vw;
   border-radius: 0.9vw;
-  border: 0.12vw solid #ffffff1f;
-  background: #0f1626;
-  color: #e8eefc;
+  border: 0.12vw solid var(--cc-border-subtle);
+  background: #020617;
+  color: var(--cc-text);
   outline: none;
   &::placeholder {
     color: #a7b0c5;
   }
   &:focus {
-    border-color: #6ea8fe;
+    border-color: var(--cc-accent-soft);
   }
 `;
 
 export const Select = styled.select`
   padding: 1vw 1.1vw;
   border-radius: 0.9vw;
-  border: 0.12vw solid #ffffff1f;
-  background: #0f1626;
-  color: #e8eefc;
+  border: 0.12vw solid var(--cc-border-subtle);
+  background: #020617;
+  color: var(--cc-text);
   outline: none;
 
   &:focus {
-    border-color: #6ea8fe;
+    border-color: var(--cc-accent-soft);
   }
 `;
 
 export const Button = styled.button`
   padding: 1vw 1.1vw;
   border-radius: 0.9vw;
-  border: 0.12vw solid #ffffff1f;
-  background: #1b2740;
-  color: #e8eefc;
+  border: 0.12vw solid var(--cc-border-subtle);
+  background: linear-gradient(
+    120deg,
+    var(--cc-accent),
+    var(--cc-accent-soft)
+  );
+  color: #020617;
   cursor: pointer;
 
   &:hover {
-    background: #233153;
+    filter: brightness(1.03);
   }
 `;
 
 export const Muted = styled.p`
-  color: #a7b0c5;
+  color: var(--cc-text-muted);
 `;
 
 export const ErrorText = styled.p`
@@ -85,24 +92,25 @@ export const CourseHeader = styled.button`
   text-align: left;
   padding: 1.1vw 1.1vw;
   border-radius: 1vw;
-  border: 0.12vw solid #ffffff1a;
-  background: #17213a;
-  color: #e8eefc;
+  border: 0.12vw solid var(--cc-border-subtle);
+  background: #020617;
+  color: var(--cc-text);
   display: flex;
   justify-content: space-between;
   align-items: center;
 
   &:hover {
-    background: #1d2a49;
+    background: #020617;
+    box-shadow: 0 0.6vw 2vw rgba(0, 0, 0, 0.7);
   }
 `;
 
 export const CourseBody = styled.div`
   padding: 1.1vw;
-  border: 0.12vw solid #ffffff1a;
+  border: 0.12vw solid var(--cc-border-subtle);
   border-top: 0vw;
   border-radius: 0vw 0vw 1vw 1vw;
-  background: #111a2d;
+  background: var(--cc-surface-alt);
 `;
 
 export const AssignmentList = styled.div`
@@ -115,8 +123,8 @@ export const AssignmentRow = styled.div`
   position: relative;
   padding: 1vw 1vw;
   border-radius: 0.9vw;
-  border: 0.12vw solid #ffffff1a;
-  background: #151f35;
+  border: 0.12vw solid var(--cc-border-subtle);
+  background: #020617;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -136,8 +144,8 @@ export const Tooltip = styled.div`
   max-width: 90vw;
   padding: 1vw 1.1vw;
   border-radius: 1vw;
-  border: 0.12vw solid #ffffff1f;
-  background: #0b0f17;
+  border: 0.12vw solid var(--cc-border-subtle);
+  background: #020617;
   box-shadow: 0vw 1.2vw 3vw #00000066;
   opacity: 0;
   transform: translateY(-0.6vh);
@@ -148,7 +156,7 @@ export const Tooltip = styled.div`
 
 export const Small = styled.div`
   font-size: 0.9vw;
-  color: #e8eefc;
+  color: var(--cc-text);
   display: grid;
   gap: 0.4vw;
 `;
@@ -156,10 +164,10 @@ export const Small = styled.div`
 export const Pill = styled.span`
   padding: 0.35vw 0.7vw;
   border-radius: 50vw;
-  border: 0.12vw solid #ffffff1f;
+  border: 0.12vw solid var(--cc-border-subtle);
   font-size: 0.85vw;
-  color: #e8eefc;
-  background: #0f1626;
+  color: var(--cc-text);
+  background: rgba(15, 23, 42, 0.95);
 `;
 
 export default function Courses(){
@@ -178,8 +186,8 @@ export default function Courses(){
 
     const [err,setErr] = useState("");
 
-    useEffect(()=>{                                                             //Authentication Guard
-        const current = auth.currentUser;   //Stuck on loading, thought it was due to some kind of state switching so checked if logged in, and if they are set loading to false
+    useEffect(()=>{
+        const current = auth.currentUser;
         if(current){
             setUser(current);
             setLoadingUser(false);
@@ -192,7 +200,7 @@ export default function Courses(){
         return()=> unsub();
     },[]);
 
-    useEffect(()=> {                                                           //To read as updated
+    useEffect(()=> {
         if (!user) return;
         
         const q=query(
@@ -213,7 +221,7 @@ export default function Courses(){
         return()=>unsub();
     },[user]);
 
-    useEffect(()=>{                 //Assignments for currently open courses
+    useEffect(()=>{
         if(!user)return;
         if(!openCourse)return;
         
@@ -236,7 +244,7 @@ export default function Courses(){
         return assignmentsByCourse[openCourse]||[];
     },[assignmentsByCourse,openCourse]);
 
-    async function addCourse(e){            //Creates courses
+    async function addCourse(e){
         e.preventDefault();
         setErr("")
 
@@ -250,7 +258,7 @@ export default function Courses(){
             setCourseName("");
             setOpenCourse(ref.id)
 
-            setAsnTitle("");            //reset asn form for new course viewed
+            setAsnTitle("");
             setAsnDueDate("");
             setAsnPriority(3);
             setAsnNotes("");
@@ -288,7 +296,7 @@ export default function Courses(){
         }
     }
 
-    async function toggleAsn(courseId, assignmentId, currentStatus){        //to toggle completion
+    async function toggleAsn(courseId, assignmentId, currentStatus){
         setErr("");
         try{
             await updateDoc(
@@ -313,6 +321,47 @@ export default function Courses(){
 return(
     <Page>
       <h1>Courses</h1>
+      <div style={{ display: "flex", gap: "0.8rem", margin: "0.75rem 0 1.2rem" }}>
+        <Link
+          href="/dashboard"
+          style={{
+            padding: "0.6rem 1.1rem",
+            borderRadius: 999,
+            border: "1px solid var(--cc-border-subtle)",
+            background: "rgba(15,23,42,0.9)",
+            color: "var(--cc-text)",
+            fontSize: 13,
+          }}
+        >
+          Dashboard
+        </Link>
+        <Link
+          href="/courses"
+          style={{
+            padding: "0.6rem 1.1rem",
+            borderRadius: 999,
+            border: "1px solid var(--cc-border-subtle)",
+            background: "rgba(15,23,42,0.9)",
+            color: "var(--cc-text)",
+            fontSize: 13,
+          }}
+        >
+          Courses
+        </Link>
+        <Link
+          href="/dev"
+          style={{
+            padding: "0.6rem 1.1rem",
+            borderRadius: 999,
+            border: "1px solid var(--cc-border-subtle)",
+            background: "rgba(15,23,42,0.9)",
+            color: "var(--cc-text)",
+            fontSize: 13,
+          }}
+        >
+          Developers
+        </Link>
+      </div>
       <Muted>
         Add a course, expand it, and add assignments inside it.
       </Muted>
@@ -343,7 +392,6 @@ return(
                   <CourseHeader
                     onClick={() => {
                       setOpenCourse((prev) => (prev === course.id ? null : course.id));
-                      // reset form when switching courses (optional)
                       setAsnTitle("");
                       setAsnDueDate("");
                       setAsnPriority(3);
@@ -358,7 +406,6 @@ return(
                     <CourseBody>
                       <h2 style={{ margin: 0 }}>Assignments</h2>
 
-                      {/* Add assignment form (inside this course) */}
                       <form onSubmit={(e) => addAssignment(e, course.id)} style={{ marginTop: 10 }}>
                         <div style={{ display: "grid", gap: 10, maxWidth: 720 }}>
                           <Row>
@@ -393,7 +440,6 @@ return(
                         </div>
                       </form>
 
-                      {/* Assignment list */}
                       <AssignmentList>
                         {openAssignments.length === 0 ? (
                           <Muted style={{ marginTop: 10 }}>No assignments yet.</Muted>
@@ -418,7 +464,6 @@ return(
                                 </Button>
                               </div>
 
-                              {/* Hover tooltip */}
                               <Tooltip className="tooltip">
                                 <Small>
                                   <div><b>{a.title}</b></div>
