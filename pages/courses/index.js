@@ -1,6 +1,6 @@
 import { useMemo, useEffect,useState }  from "react";
 import Link from "next/link";
-import { addDoc,collection,onSnapshot,orderBy,query,updateDoc} from "firebase/firestore";
+import { addDoc,collection,doc,onSnapshot,orderBy,query,updateDoc} from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import {auth, database} from "@/library/firebaseConfig";
 import styled from "styled-components";
@@ -128,6 +128,24 @@ export const AssignmentRow = styled.div`
   }
 `;
 
+export const Tooltip = styled.div`
+  position: absolute;
+  left: 1vw;
+  top: calc(100% + 1vh);
+  width: 40vw;
+  max-width: 90vw;
+  padding: 1vw 1.1vw;
+  border-radius: 1vw;
+  border: 0.12vw solid #ffffff1f;
+  background: #0b0f17;
+  box-shadow: 0vw 1.2vw 3vw #00000066;
+  opacity: 0;
+  transform: translateY(-0.6vh);
+  transition: 0.12s ease;
+  pointer-events: none;
+  z-index: 50;
+`;
+
 export const Small = styled.div`
   font-size: 0.9vw;
   color: #e8eefc;
@@ -225,7 +243,7 @@ export default function Courses(){
         if(!courseName.trim()) return;
         
         try{
-            await addDoc(collection(database,"users",user.uid,"courses"),{
+            const ref = await addDoc(collection(database,"users",user.uid,"courses"),{
                 name: courseName.trim(),
                 createdAt: Date.now()
             });
@@ -252,7 +270,7 @@ export default function Courses(){
             await addDoc(collection(database,"users",user.uid,"courses",courseId,"assignments"),
         {
             title,
-            duedate:asnDueDate,
+            dueDate:asnDueDate,
             priority:Number(asnPriority),
             status:"todo",
             notes:asnNotes.trim(),
@@ -275,7 +293,7 @@ export default function Courses(){
         try{
             await updateDoc(
                 doc(database,"users",user.uid,"courses",courseId,"assignments",assignmentId),
-                {status: currentStatus==="completed"?"todo":"done"}
+                {status: currentStatus==="done"?"todo":"done"}
             );
         }catch(e){
             setErr(e.message);
@@ -357,17 +375,7 @@ return(
                               value={asnDueDate}
                               onChange={(e) => setAsnDueDate(e.target.value)}
                             />
-                            <select
-                              value={asnPriority}
-                              onChange={(e) => setAsnPriority(e.target.value)}
-                              style={{
-                                padding: "10px 12px",
-                                borderRadius: 10,
-                                border: "1px solid rgba(255,255,255,0.12)",
-                                background: "rgba(0,0,0,0.18)",
-                                color: "inherit",
-                              }}
-                            >
+                            <select value={asnPriority} onChange={(e) => setAsnPriority(e.target.value)}>
                               <option value={1}>Priority 1</option>
                               <option value={2}>Priority 2</option>
                               <option value={3}>Priority 3</option>
@@ -404,7 +412,7 @@ return(
                                 <span style={{ opacity: 0.85 }}>due {a.dueDate}</span>
                                 <Button
                                   type="button"
-                                  onClick={() => toggleDone(course.id, a.id, a.status)}
+                                  onClick={() => toggleAsn(course.id, a.id, a.status)}
                                 >
                                   {a.status === "done" ? "Mark todo" : "Mark done"}
                                 </Button>
