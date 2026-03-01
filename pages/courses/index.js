@@ -1,8 +1,148 @@
-import { use, useEffect,useState }  from "react";
+import { useMemo, useEffect,useState }  from "react";
 import Link from "next/link";
 import { addDoc,collection,onSnapshot,orderBy,query,updateDoc} from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import {auth, database} from "@/library/firebaseConfig";
+import styled from "styled-components";
+
+//Styling
+export const Page = styled.div`
+  padding: 2.2vw;
+  max-width: 72vw;
+`;
+
+export const Card = styled.div`
+  background: #121a2a;
+  border: 0.12vw solid #ffffff1a;
+  border-radius: 1.2vw;
+  padding: 1.6vw;
+`;
+
+export const Row = styled.div`
+  display: flex;
+  gap: 1vw;
+  align-items: center;
+`;
+
+export const Input = styled.input`
+  flex: 1;
+  padding: 1vw 1.1vw;
+  border-radius: 0.9vw;
+  border: 0.12vw solid #ffffff1f;
+  background: #0f1626;
+  color: #e8eefc;
+  outline: none;
+  &::placeholder {
+    color: #a7b0c5;
+  }
+  &:focus {
+    border-color: #6ea8fe;
+  }
+`;
+
+export const Select = styled.select`
+  padding: 1vw 1.1vw;
+  border-radius: 0.9vw;
+  border: 0.12vw solid #ffffff1f;
+  background: #0f1626;
+  color: #e8eefc;
+  outline: none;
+
+  &:focus {
+    border-color: #6ea8fe;
+  }
+`;
+
+export const Button = styled.button`
+  padding: 1vw 1.1vw;
+  border-radius: 0.9vw;
+  border: 0.12vw solid #ffffff1f;
+  background: #1b2740;
+  color: #e8eefc;
+  cursor: pointer;
+
+  &:hover {
+    background: #233153;
+  }
+`;
+
+export const Muted = styled.p`
+  color: #a7b0c5;
+`;
+
+export const ErrorText = styled.p`
+  color: #ff6b6b;
+`;
+
+export const Accordion = styled.div`
+  display: grid;
+  gap: 1vw;
+  margin-top: 1.2vw;
+`;
+
+export const CourseHeader = styled.button`
+  width: 100%;
+  text-align: left;
+  padding: 1.1vw 1.1vw;
+  border-radius: 1vw;
+  border: 0.12vw solid #ffffff1a;
+  background: #17213a;
+  color: #e8eefc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &:hover {
+    background: #1d2a49;
+  }
+`;
+
+export const CourseBody = styled.div`
+  padding: 1.1vw;
+  border: 0.12vw solid #ffffff1a;
+  border-top: 0vw;
+  border-radius: 0vw 0vw 1vw 1vw;
+  background: #111a2d;
+`;
+
+export const AssignmentList = styled.div`
+  display: grid;
+  gap: 0.8vw;
+  margin-top: 1vw;
+`;
+
+export const AssignmentRow = styled.div`
+  position: relative;
+  padding: 1vw 1vw;
+  border-radius: 0.9vw;
+  border: 0.12vw solid #ffffff1a;
+  background: #151f35;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &:hover .tooltip {
+    opacity: 1;
+    transform: translateY(0vh);
+    pointer-events: auto;
+  }
+`;
+
+export const Small = styled.div`
+  font-size: 0.9vw;
+  color: #e8eefc;
+  display: grid;
+  gap: 0.4vw;
+`;
+
+export const Pill = styled.span`
+  padding: 0.35vw 0.7vw;
+  border-radius: 50vw;
+  border: 0.12vw solid #ffffff1f;
+  font-size: 0.85vw;
+  color: #e8eefc;
+  background: #0f1626;
+`;
 
 export default function Courses(){
     const [user,setUser] = useState(null);
@@ -104,8 +244,8 @@ export default function Courses(){
     async function addAssignment(e,courseId){
         e.preventDefault();
         setErr("");
-
-        if(!asnTitle.trim()) return;
+        const title=asnTitle.trim();
+        if(!title) return;
         if(!asnDueDate) return;
 
         try{
@@ -130,9 +270,19 @@ export default function Courses(){
         }
     }
 
-    
+    async function toggleAsn(courseId, assignmentId, currentStatus){        //to toggle completion
+        setErr("");
+        try{
+            await updateDoc(
+                doc(database,"users",user.uid,"courses",courseId,"assignments",assignmentId),
+                {status: currentStatus==="completed"?"todo":"done"}
+            );
+        }catch(e){
+            setErr(e.message);
+        }
+    }
 
-    if (loadingUser) return <p style={{ padding: 24 }}>Loading...</p>;
+    if (loadingUser) return <p style={{ padding: 24 }}>Verifiying User</p>;
 
     if(!user){
         return (
@@ -143,32 +293,150 @@ export default function Courses(){
         );
     }
 return(
-    <div style={{ padding: 24, maxWidth: 700 }}>
+    <Page>
       <h1>Courses</h1>
+      <Muted>
+        Add a course, expand it, and add assignments inside it.
+      </Muted>
 
-      <form onSubmit={addCourse} style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <input
-          value={courseName}
-          onChange={(e) => setCourseName(e.target.value)}
-          placeholder="Course name (e.g: CMPSC 263)"
-          style={{ flex: 1, padding: 8 }}
-        />
-        <button type="submit">Add</button>
-      </form>
+      <Card>
+        <form onSubmit={addCourse}>
+          <Row>
+            <Input
+              value={courseName}
+              onChange={(e) => setCourseName(e.target.value)}
+              placeholder="Course name (e.g., CMPSC 461)"
+            />
+            <Button type="submit">Add course</Button>
+          </Row>
+        </form>
 
-      {err && <p style={{ color: "salmon" }}>{err}</p>}
+        {err && <ErrorText>{err}</ErrorText>}
 
-      <h2>Your courses</h2>
-      {courses.length === 0 ? (
-        <p>No courses yet.</p>
-      ) : (
-        <ul>
-          {courses.map((c) => (
-            <li key={c.id}>{c.name}</li>
-          ))}
-        </ul>
-      )}
-    </div>
+        <Accordion>
+          {courses.length === 0 ? (
+            <Muted>No courses yet.</Muted>
+          ) : (
+            courses.map((course) => {
+              const isOpen = openCourse === course.id;
+
+              return (
+                <div key={course.id}>
+                  <CourseHeader
+                    onClick={() => {
+                      setOpenCourse((prev) => (prev === course.id ? null : course.id));
+                      // reset form when switching courses (optional)
+                      setAsnTitle("");
+                      setAsnDueDate("");
+                      setAsnPriority(3);
+                      setAsnNotes("");
+                    }}
+                  >
+                    <span>{course.name}</span>
+                    <span style={{ opacity: 0.8 }}>{isOpen ? "▾" : "▸"}</span>
+                  </CourseHeader>
+
+                  {isOpen && (
+                    <CourseBody>
+                      <h2 style={{ margin: 0 }}>Assignments</h2>
+
+                      {/* Add assignment form (inside this course) */}
+                      <form onSubmit={(e) => addAssignment(e, course.id)} style={{ marginTop: 10 }}>
+                        <div style={{ display: "grid", gap: 10, maxWidth: 720 }}>
+                          <Row>
+                            <Input
+                              value={asnTitle}
+                              onChange={(e) => setAsnTitle(e.target.value)}
+                              placeholder="Assignment title (e.g., HW 3)"
+                            />
+                          </Row>
+
+                          <Row>
+                            <Input
+                              type="date"
+                              value={asnDueDate}
+                              onChange={(e) => setAsnDueDate(e.target.value)}
+                            />
+                            <select
+                              value={asnPriority}
+                              onChange={(e) => setAsnPriority(e.target.value)}
+                              style={{
+                                padding: "10px 12px",
+                                borderRadius: 10,
+                                border: "1px solid rgba(255,255,255,0.12)",
+                                background: "rgba(0,0,0,0.18)",
+                                color: "inherit",
+                              }}
+                            >
+                              <option value={1}>Priority 1</option>
+                              <option value={2}>Priority 2</option>
+                              <option value={3}>Priority 3</option>
+                              <option value={4}>Priority 4</option>
+                              <option value={5}>Priority 5</option>
+                            </select>
+                            <Button type="submit">Add</Button>
+                          </Row>
+
+                          <Input
+                            value={asnNotes}
+                            onChange={(e) => setAsnNotes(e.target.value)}
+                            placeholder="Notes (optional) – shown in hover tooltip"
+                          />
+                        </div>
+                      </form>
+
+                      {/* Assignment list */}
+                      <AssignmentList>
+                        {openAssignments.length === 0 ? (
+                          <Muted style={{ marginTop: 10 }}>No assignments yet.</Muted>
+                        ) : (
+                          openAssignments.map((a) => (
+                            <AssignmentRow key={a.id}>
+                              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                                <b style={{ textDecoration: a.status === "done" ? "line-through" : "none" }}>
+                                  {a.title}
+                                </b>
+                                <Pill>{a.status === "done" ? "done" : "todo"}</Pill>
+                                <Pill>p{a.priority}</Pill>
+                              </div>
+
+                              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                <span style={{ opacity: 0.85 }}>due {a.dueDate}</span>
+                                <Button
+                                  type="button"
+                                  onClick={() => toggleDone(course.id, a.id, a.status)}
+                                >
+                                  {a.status === "done" ? "Mark todo" : "Mark done"}
+                                </Button>
+                              </div>
+
+                              {/* Hover tooltip */}
+                              <Tooltip className="tooltip">
+                                <Small>
+                                  <div><b>{a.title}</b></div>
+                                  <div>Due: <b>{a.dueDate}</b></div>
+                                  <div>Priority: <b>{a.priority}</b></div>
+                                  <div>Status: <b>{a.status}</b></div>
+                                  {a.notes ? (
+                                    <div>Notes: <b>{a.notes}</b></div>
+                                  ) : (
+                                    <div style={{ opacity: 0.7 }}>Notes: (none)</div>
+                                  )}
+                                </Small>
+                              </Tooltip>
+                            </AssignmentRow>
+                          ))
+                        )}
+                      </AssignmentList>
+                    </CourseBody>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </Accordion>
+      </Card>
+    </Page>    
 );
 
 }
