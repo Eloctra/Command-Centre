@@ -10,7 +10,7 @@ export default async function handler(req,res) {
         const start= new Date(now.getFullYear(),now.getMonth(),now.getDate()).toISOString();
         const end= new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).toISOString();
 
-        const url="https://www.googleapis.com/calendar/v3/calendars/primary.events"+`?timeMin=${encodeURIComponent(start)}`+`&timeMax=${encodeURIComponent(end)}`+`&singleEvents=true&orderBy=startTime`;
+        const url="https://www.googleapis.com/calendar/v3/calendars/primary/events"+`?timeMin=${encodeURIComponent(start)}`+`&timeMax=${encodeURIComponent(end)}`+`&singleEvents=true&orderBy=startTime`;
 
         const r = await fetch(url, {
             headers: { Authorization: `Bearer ${token.accessToken}` },
