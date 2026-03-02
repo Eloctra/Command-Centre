@@ -1,5 +1,5 @@
 // Developer projects page for tracking projects and their associated tasks.
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import {
   addDoc,
@@ -19,6 +19,7 @@ import {
   Row,
   Input,
   Button,
+  Select,
   Muted,
   ErrorText,
   Accordion,
@@ -38,6 +39,7 @@ export default function Developers() {
     const [projectName, setProjectName] = useState("");
     const [projects, setProjects] = useState([]);
     const [openProject, setOpenProject] = useState(null);
+    const projectInitializedRef = useRef(false);
 
     const [tasksByProject, setTasksByProject] = useState({});
     const [taskTitle, setTaskTitle] = useState("");
@@ -75,13 +77,23 @@ export default function Developers() {
       (snap) => {
         const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setProjects(list);
-        if (!openProject && list.length > 0) setOpenProject(list[0].id);
+        setOpenProject((prev) => {
+          if (list.length === 0) {
+            projectInitializedRef.current = false;
+            return null;
+          }
+          const stillExists = prev && list.some((p) => p.id === prev);
+          if (stillExists) return prev;
+          if (!prev && projectInitializedRef.current) return null;
+          projectInitializedRef.current = true;
+          return list[0].id;
+        });
       },
       (e) => setErr(e.message)
     );
 
     return () => unsub();
-  }, [user, openProject]);
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -318,9 +330,10 @@ export default function Developers() {
                             display: "grid",
                             gap: 10,
                             maxWidth: 720,
+                            gridTemplateColumns: "1fr auto",
                           }}
                         >
-                          <Row>
+                          <Row style={{ gridColumn: "1 / -1" }}>
                             <Input
                               value={taskTitle}
                               onChange={(e) =>
@@ -330,7 +343,7 @@ export default function Developers() {
                             />
                           </Row>
 
-                          <Row>
+                          <Row style={{ gridColumn: "1 / 2" }}>
                             <Input
                               type="date"
                               value={taskDueDate}
@@ -338,25 +351,34 @@ export default function Developers() {
                                 setTaskDueDate(e.target.value)
                               }
                             />
-                            <select
-                              value={taskPriority}
-                              onChange={(e) =>
-                                setTaskPriority(e.target.value)
-                              }
-                            >
-                              <option value={1}>Priority 1</option>
-                              <option value={2}>Priority 2</option>
-                              <option value={3}>Priority 3</option>
-                              <option value={4}>Priority 4</option>
-                              <option value={5}>Priority 5</option>
-                            </select>
-                            <Button type="submit">Add</Button>
+                            <Button type="submit">Add task</Button>
                           </Row>
+
+                          <Select
+                            value={taskPriority}
+                            onChange={(e) =>
+                              setTaskPriority(Number(e.target.value))
+                            }
+                            aria-label="Task priority"
+                            style={{
+                              gridColumn: "2 / 3",
+                              gridRow: "2 / span 2",
+                              alignSelf: "end",
+                              minWidth: 160,
+                            }}
+                          >
+                            <option value={1}>Priority 1</option>
+                            <option value={2}>Priority 2</option>
+                            <option value={3}>Priority 3</option>
+                            <option value={4}>Priority 4</option>
+                            <option value={5}>Priority 5</option>
+                          </Select>
 
                           <Input
                             value={taskNotes}
                             onChange={(e) => setTaskNotes(e.target.value)}
                             placeholder="Notes (optional) – shown in hover tooltip"
+                            style={{ gridColumn: "1 / 2" }}
                           />
                         </div>
                       </form>
@@ -411,6 +433,11 @@ export default function Developers() {
                                       t.status
                                     )
                                   }
+                                  style={{
+                                    flexShrink: 0,
+                                    padding: "0.5rem 0.9rem",
+                                    fontSize: 13,
+                                  }}
                                 >
                                   {t.status === "done"
                                     ? "Mark todo"

@@ -407,8 +407,15 @@ return(
                       <h2 style={{ margin: 0 }}>Assignments</h2>
 
                       <form onSubmit={(e) => addAssignment(e, course.id)} style={{ marginTop: 10 }}>
-                        <div style={{ display: "grid", gap: 10, maxWidth: 720 }}>
-                          <Row>
+                        <div
+                          style={{
+                            display: "grid",
+                            gap: 10,
+                            maxWidth: 720,
+                            gridTemplateColumns: "1fr auto",
+                          }}
+                        >
+                          <Row style={{ gridColumn: "1 / -1" }}>
                             <Input
                               value={asnTitle}
                               onChange={(e) => setAsnTitle(e.target.value)}
@@ -416,26 +423,38 @@ return(
                             />
                           </Row>
 
-                          <Row>
+                          <Row style={{ gridColumn: "1 / 2" }}>
                             <Input
                               type="date"
                               value={asnDueDate}
                               onChange={(e) => setAsnDueDate(e.target.value)}
                             />
-                            <select value={asnPriority} onChange={(e) => setAsnPriority(e.target.value)}>
-                              <option value={1}>Priority 1</option>
-                              <option value={2}>Priority 2</option>
-                              <option value={3}>Priority 3</option>
-                              <option value={4}>Priority 4</option>
-                              <option value={5}>Priority 5</option>
-                            </select>
-                            <Button type="submit">Add</Button>
+                            <Button type="submit">Add assignment</Button>
                           </Row>
+
+                          <Select
+                            value={asnPriority}
+                            onChange={(e) => setAsnPriority(Number(e.target.value))}
+                            aria-label="Assignment priority"
+                            style={{
+                              gridColumn: "2 / 3",
+                              gridRow: "2 / span 2",
+                              alignSelf: "end",
+                              minWidth: 160,
+                            }}
+                          >
+                            <option value={1}>Priority 1</option>
+                            <option value={2}>Priority 2</option>
+                            <option value={3}>Priority 3</option>
+                            <option value={4}>Priority 4</option>
+                            <option value={5}>Priority 5</option>
+                          </Select>
 
                           <Input
                             value={asnNotes}
                             onChange={(e) => setAsnNotes(e.target.value)}
                             placeholder="Notes (optional) – shown in hover tooltip"
+                            style={{ gridColumn: "1 / 2" }}
                           />
                         </div>
                       </form>

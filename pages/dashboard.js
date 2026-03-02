@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { auth, database } from "@/library/firebaseConfig";
 import { useRouter } from "next/router";
-import { useSession, signIn } from "next-auth/react";
+import { useSession, signIn} from "next-auth/react";
 
 export default function Dashboard() {
   const [userEmail, setUserEmail] = useState("");
@@ -200,9 +200,10 @@ export default function Dashboard() {
   return (
     <div
       style={{
-        padding: 24,
-        maxWidth: 960,
+        padding: "2.2vw",
+        maxWidth: "72vw",
         margin: "0 auto",
+        color: "var(--cc-text)",
       }}
     >
       <header
