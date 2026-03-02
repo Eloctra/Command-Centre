@@ -2,8 +2,8 @@ import { getToken } from "next-auth/jwt";
 
 export default async function handler(req,res) {
     try{
-        const token= await getToken({req,secret:process.env.NEXTAUTH_SECRET});
-        if(!token?.access_token){
+        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+        if (!token?.accessToken) {
             return res.status(401).json({message: "not signed in with google"});
         }
         const now=new Date();
@@ -12,8 +12,8 @@ export default async function handler(req,res) {
 
         const url="https://www.googleapis.com/calendar/v3/calendars/primary.events"+`?timeMin=${encodeURIComponent(start)}`+`&timeMax=${encodeURIComponent(end)}`+`&singleEvents=true&orderBy=startTime`;
 
-        const r= await fetch(url,{
-            headers:{Authorization:`Bearer ${token.access_token}`},
+        const r = await fetch(url, {
+            headers: { Authorization: `Bearer ${token.accessToken}` },
         });
 
         const data = await r.json();
