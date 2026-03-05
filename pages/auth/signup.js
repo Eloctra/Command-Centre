@@ -27,29 +27,95 @@ export default function Signup() {
   }
 
   return (
-    <div style={{ maxWidth: 360 }}>
-      <h1>Sign Up</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%)",
+        padding: "2rem",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          background: "var(--cc-surface)",
+          borderRadius: "1.2rem",
+          border: "1px solid var(--cc-border-subtle)",
+          boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+          padding: "1.8rem 2rem 2.1rem",
+          color: "var(--cc-text)",
+        }}
+      >
+        <h1 style={{ margin: 0, marginBottom: "0.5rem", fontSize: "1.6rem" }}>
+          Sign up
+        </h1>
+        <p style={{ margin: 0, marginBottom: "1.5rem", opacity: 0.8, fontSize: 14 }}>
+          Create an account to start using your command centre.
+        </p>
 
-      <form onSubmit={handleSignup} style={{ display: "grid", gap: 10 }}>
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Create account</button>
-      </form>
-      <div>
-        <Link href="/auth/login">Login</Link>
+        <form
+          onSubmit={handleSignup}
+          style={{ display: "grid", gap: 12, marginBottom: "1.2rem" }}
+        >
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{
+              padding: "0.8rem 0.9rem",
+              borderRadius: "0.9rem",
+              border: "1px solid var(--cc-border-subtle)",
+              background: "#020617",
+              color: "var(--cc-text)",
+              outline: "none",
+            }}
+          />
+          <input
+            placeholder="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              padding: "0.8rem 0.9rem",
+              borderRadius: "0.9rem",
+              border: "1px solid var(--cc-border-subtle)",
+              background: "#020617",
+              color: "var(--cc-text)",
+              outline: "none",
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              marginTop: "0.4rem",
+              padding: "0.8rem 0.9rem",
+              borderRadius: "0.9rem",
+              border: "1px solid var(--cc-border-subtle)",
+              background:
+                "linear-gradient(120deg, var(--cc-accent), var(--cc-accent-soft))",
+              color: "#020617",
+              fontWeight: 600,
+              cursor: "pointer",
+              fontSize: 14,
+            }}
+          >
+            Create account
+          </button>
+        </form>
+
+        <div style={{ fontSize: 13, marginBottom: "0.4rem" }}>
+          <span style={{ opacity: 0.8 }}>Already have an account? </span>
+          <Link href="/auth/login" style={{ color: "var(--cc-accent-soft)" }}>
+            Login
+          </Link>
+        </div>
+
+        {msg && <p style={{ color: "lightgreen", fontSize: 13 }}>{msg}</p>}
+        {err && <p style={{ color: "salmon", fontSize: 13 }}>{err}</p>}
       </div>
-
-      {msg && <p style={{ color: "lightgreen" }}>{msg}</p>}
-      {err && <p style={{ color: "salmon" }}>{err}</p>}
     </div>
   );
 }
